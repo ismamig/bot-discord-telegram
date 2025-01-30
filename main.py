@@ -4,8 +4,12 @@ from datetime import datetime
 import requests
 import os
 from dotenv import load_dotenv
+import logging
 
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger()
  
 class DiscordBot:
     def __init__(self, token, target_channel_id, telegram_token, telegram_chat_id):
@@ -28,16 +32,16 @@ class DiscordBot:
         self.bot.event(self.on_message)
 
     async def on_ready(self):
-        print(f"Bot connecté en tant que {self.bot.user}")
+        logger.info(f"Bot connecté en tant que {self.bot.user}")
 
     async def on_message(self, message):
         # Vérifie si le message est envoyé dans le channel cible et n'est pas par un bot
         if message.channel.id == self.target_channel_id and not message.author.bot:
-            print(f"Message reçu dans le channel cible : {message.content} (de {message.author.name})")
+            logger.info(f"Message reçu dans le channel cible : {message.content} (de {message.author.name})")
             self.process_message(message)
 
     def process_message(self, message):
-        print(f"Traitement du message : {message.content}")
+        logger.info(f"Traitement du message : {message.content}")
 
         # Ajouter une entrée dans le fichier de log
         timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
@@ -57,9 +61,9 @@ class DiscordBot:
 
         response = requests.post(url, json=payload)
         if response.status_code == 200:
-            print("Message envoyé avec succès à Telegram !")
+            logger.info(f"Message envoyé à Telegram : {message}")
         else:
-            print(f"Erreur lors de l'envoi : {response.status_code}, {response.text}")
+            logger.error(f"Erreur lors de l'envoi : {response.status_code}, {response.text}")
 
     def run(self):
         self.bot.run(self.token)
